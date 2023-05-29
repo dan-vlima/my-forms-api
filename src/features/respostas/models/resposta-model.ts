@@ -1,5 +1,5 @@
 import { BaseModel } from 'src/features/core/models/base-model';
-import { Questionario } from 'src/features/questionarios/models/questionario-model';
+import { Pergunta } from 'src/features/perguntas/models/pergunta-model';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
@@ -10,7 +10,7 @@ export class Resposta extends BaseModel {
   @Column({ type: 'timestamptz' })
   data: Date;
 
-  @ManyToOne(() => Questionario)
+  @ManyToOne(() => Pergunta)
   @JoinColumn()
-  cod_questionario: string;
+  cod_pergunta: string;
 }

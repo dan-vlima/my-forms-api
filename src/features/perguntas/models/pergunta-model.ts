@@ -1,11 +1,13 @@
 import { BaseModel } from 'src/features/core/models/base-model';
-import { Column, Entity } from 'typeorm';
+import { Questionario } from 'src/features/questionarios/models/questionario-model';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Pergunta extends BaseModel {
   @Column()
   descricao: string;
 
-  @Column()
-  cod_perg: string;
+  @ManyToOne(() => Questionario)
+  @JoinColumn()
+  cod_questionario: string;
 }

@@ -17,7 +17,7 @@ export class RespostasService {
         cod: 'e4b4f769-f5da-490a-881e-20cd154b4a57',
         data: new Date(),
         descricao: 'Uma descrição',
-        cod_questionario: formId,
+        cod_pergunta: formId,
       },
     ]);
   }
@@ -27,7 +27,7 @@ export class RespostasService {
       cod: 'e4b4f769-f5da-490a-881e-20cd154b4a57',
       data: new Date(),
       descricao: 'Uma descrição',
-      cod_questionario: formId,
+      cod_pergunta: formId,
     });
   }
 
@@ -36,7 +36,7 @@ export class RespostasService {
       cod: answerId,
       data: new Date(),
       descricao: 'Uma descrição',
-      cod_questionario: formId,
+      cod_pergunta: formId,
     });
   }
 
