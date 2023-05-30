@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSourceOptions } from 'src/datasource-config';
 import { DataSource } from 'typeorm';
+import { dataSourceOptions } from './features/core/constants/data-source-options';
 import { PerguntasModule } from './features/perguntas/perguntas-module';
 import { QuestionariosModule } from './features/questionarios/questionarios-module';
 import { RespostasModule } from './features/respostas/respostas-module';
