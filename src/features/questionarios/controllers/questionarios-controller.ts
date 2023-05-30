@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -8,9 +9,16 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { QUESTIONARIOS_ROUTE_PATH } from '../constants/questionarios-router-path';
 import { Questionario } from '../models/questionario-model';
+import { CreateQuestionarioSchema } from '../schemas/create-questionario-schema';
 import { QuestionariosService } from '../services/questionarios-service';
 
 @ApiTags('Questionários')
@@ -32,8 +40,36 @@ export class QuestionariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async create() {
-    return this.questionariosService.create();
+  @ApiBody({
+    description: 'Questionário',
+    required: true,
+    isArray: true,
+    schema: {
+      type: 'object',
+      properties: {
+        nome: {
+          type: 'string',
+          example: 'Enquete 1',
+          description: 'O nome da enquete',
+        },
+        descricao: {
+          type: 'string',
+          example: 'Esta é uma descrição da enquete.',
+          description: 'A descrição da enquete.',
+        },
+        cod_usuario: {
+          type: 'string',
+          example: '04372415-41c8-4ff9-893e-313b5385d59c',
+          description:
+            'O identificador único do usuário que criou o questionário',
+        },
+      },
+    },
+  })
+  async create(
+    @Body() questionario: CreateQuestionarioSchema,
+  ): Promise<Questionario> {
+    return this.questionariosService.create(questionario);
   }
 
   @Get()
@@ -50,7 +86,7 @@ export class QuestionariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async findAll() {
+  async findAll(): Promise<Questionario[]> {
     return this.questionariosService.findAll();
   }
 
@@ -76,7 +112,7 @@ export class QuestionariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async findById(@Param() params): Promise<Partial<Questionario>> {
+  async findById(@Param() params): Promise<Questionario> {
     return this.questionariosService.findById(params.id);
   }
 
@@ -108,8 +144,37 @@ export class QuestionariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async putById(@Param() params): Promise<Questionario> {
-    return this.questionariosService.putById(params.id);
+  @ApiBody({
+    description: 'Questionário',
+    required: true,
+    isArray: true,
+    schema: {
+      type: 'object',
+      properties: {
+        nome: {
+          type: 'string',
+          example: 'Enquete 1',
+          description: 'O nome da enquete',
+        },
+        descricao: {
+          type: 'string',
+          example: 'Esta é uma descrição da enquete.',
+          description: 'A descrição da enquete.',
+        },
+        cod_usuario: {
+          type: 'string',
+          example: '04372415-41c8-4ff9-893e-313b5385d59c',
+          description:
+            'O identificador único do usuário que criou o questionário',
+        },
+      },
+    },
+  })
+  async putById(
+    @Param() params,
+    @Body() questionario: CreateQuestionarioSchema,
+  ): Promise<Questionario> {
+    return this.questionariosService.putById(params.id, questionario);
   }
 
   @Patch(':id')
@@ -140,8 +205,37 @@ export class QuestionariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async patchById(@Param() params): Promise<Questionario> {
-    return this.questionariosService.patchById(params.id);
+  @ApiBody({
+    description: 'Questionário',
+    required: true,
+    isArray: true,
+    schema: {
+      type: 'object',
+      properties: {
+        nome: {
+          type: 'string',
+          example: 'Enquete 1',
+          description: 'O nome da enquete',
+        },
+        descricao: {
+          type: 'string',
+          example: 'Esta é uma descrição da enquete.',
+          description: 'A descrição da enquete.',
+        },
+        cod_usuario: {
+          type: 'string',
+          example: '04372415-41c8-4ff9-893e-313b5385d59c',
+          description:
+            'O identificador único do usuário que criou o questionário',
+        },
+      },
+    },
+  })
+  async patchById(
+    @Param() params,
+    @Body() questionario: CreateQuestionarioSchema,
+  ): Promise<Questionario> {
+    return this.questionariosService.patchById(params.id, questionario);
   }
 
   @Delete(':id')
@@ -166,7 +260,7 @@ export class QuestionariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async deleteById(@Param() params): Promise<void> {
+  async deleteById(@Param() params): Promise<string> {
     return this.questionariosService.deleteById(params.id);
   }
 }

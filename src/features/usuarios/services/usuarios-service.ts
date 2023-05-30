@@ -56,7 +56,6 @@ export class UsuariosService {
     );
     await this.usuariosRepository.save(editedUser);
     const { cod, nome, cpf } = editedUser;
-
     return { cod, nome, cpf };
   }
 

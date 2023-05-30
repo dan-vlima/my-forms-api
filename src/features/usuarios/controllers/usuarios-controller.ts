@@ -110,7 +110,7 @@ export class UsuariosController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'O usuário não foi encontrado',
+    description: 'O usuário não foi encontrado.',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -136,7 +136,7 @@ export class UsuariosController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'O usuário não foi encontrado',
+    description: 'O usuário não foi encontrado.',
   })
   @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -195,7 +195,7 @@ export class UsuariosController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'O usuário não foi encontrado',
+    description: 'O usuário não foi encontrado.',
   })
   @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -252,7 +252,7 @@ export class UsuariosController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'O usuário não foi encontrado',
+    description: 'O usuário não foi encontrado.',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

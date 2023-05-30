@@ -8,7 +8,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'questionarios' })
 export class Questionario extends BaseModel {
   @CreateDateColumn()
   data: Date;
@@ -20,6 +20,6 @@ export class Questionario extends BaseModel {
   descricao: string;
 
   @ManyToOne(() => Usuario)
-  @JoinColumn()
+  @JoinColumn({ name: 'cod_usuario', referencedColumnName: 'cod' })
   cod_usuario: string;
 }

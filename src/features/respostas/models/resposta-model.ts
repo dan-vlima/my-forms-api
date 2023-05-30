@@ -3,7 +3,7 @@ import { Pergunta } from 'src/features/perguntas/models/pergunta-model';
 import { Usuario } from 'src/features/usuarios/models/usuario-model';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'respostas' })
 export class Resposta extends BaseModel {
   @Column()
   descricao: string;
