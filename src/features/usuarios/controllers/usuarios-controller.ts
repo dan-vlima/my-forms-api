@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -8,9 +9,17 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Usuario } from '../models/usuario-model';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CreateUsuarioSchema } from '../schemas/create-usuario-schema';
+import { EditUsuarioSchema } from '../schemas/edit-usuario-schema';
 import { UsuariosService } from '../services/usuarios-service';
+import { PublicUsuarioType } from '../types/public-usuario-type';
 
 @ApiTags('Usuários')
 @Controller('usuarios')
@@ -24,6 +33,11 @@ export class UsuariosController {
     description: 'Usuário criado com sucesso',
   })
   @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description:
+      'A entidade recebida não corresponde ao esperado pelo servidor.',
+  })
+  @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'Operação não permitida.',
   })
@@ -31,8 +45,35 @@ export class UsuariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async create() {
-    return this.usuariosService.create();
+  @ApiBody({
+    description: 'Usuário',
+    required: true,
+    isArray: false,
+    schema: {
+      type: 'object',
+      properties: {
+        nome: {
+          type: 'string',
+          example: 'Dan',
+          description: 'O nome do usuário',
+        },
+        cpf: {
+          type: 'string',
+          example: '12345678910',
+          description: 'O CPF do usuário',
+        },
+        senha: {
+          type: 'string',
+          example: 'AyxUSZ#t6zC8i6Z$',
+          description: 'A senha do usuário',
+        },
+      },
+    },
+  })
+  async create(
+    @Body() usuario: CreateUsuarioSchema,
+  ): Promise<Omit<PublicUsuarioType, 'cod'>> {
+    return this.usuariosService.create(usuario);
   }
 
   @Get()
@@ -49,7 +90,7 @@ export class UsuariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async findAll() {
+  async findAll(): Promise<PublicUsuarioType[]> {
     return this.usuariosService.findAll();
   }
 
@@ -75,7 +116,7 @@ export class UsuariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async findById(@Param() params): Promise<Partial<Usuario>> {
+  async findById(@Param() params): Promise<PublicUsuarioType> {
     return this.usuariosService.findById(params.id);
   }
 
@@ -106,8 +147,36 @@ export class UsuariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async putById(@Param() params): Promise<Usuario> {
-    return this.usuariosService.putById(params.id);
+  @ApiBody({
+    description: 'Usuário',
+    required: true,
+    isArray: false,
+    schema: {
+      type: 'object',
+      properties: {
+        nome: {
+          type: 'string',
+          example: 'Dan',
+          description: 'O nome do usuário',
+        },
+        cpf: {
+          type: 'string',
+          example: '12345678910',
+          description: 'O CPF do usuário',
+        },
+        senha: {
+          type: 'string',
+          example: 'AyxUSZ#t6zC8i6Z$',
+          description: 'A senha do usuário',
+        },
+      },
+    },
+  })
+  async putById(
+    @Param() params,
+    @Body() usuario: EditUsuarioSchema,
+  ): Promise<PublicUsuarioType> {
+    return this.usuariosService.putById(params.id, usuario);
   }
 
   @Patch(':id')
@@ -137,8 +206,36 @@ export class UsuariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async patchById(@Param() params): Promise<Usuario> {
-    return this.usuariosService.patchById(params.id);
+  @ApiBody({
+    description: 'Usuário',
+    required: true,
+    isArray: false,
+    schema: {
+      type: 'object',
+      properties: {
+        nome: {
+          type: 'string',
+          example: 'Dan',
+          description: 'O nome do usuário',
+        },
+        cpf: {
+          type: 'string',
+          example: '12345678910',
+          description: 'O CPF do usuário',
+        },
+        senha: {
+          type: 'string',
+          example: 'AyxUSZ#t6zC8i6Z$',
+          description: 'A senha do usuário',
+        },
+      },
+    },
+  })
+  async patchById(
+    @Param() params,
+    @Body() usuario: Partial<CreateUsuarioSchema>,
+  ): Promise<PublicUsuarioType> {
+    return this.usuariosService.patchById(params.id, usuario);
   }
 
   @Delete(':id')
@@ -161,7 +258,7 @@ export class UsuariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async deleteById(@Param() params): Promise<void> {
+  async deleteById(@Param() params): Promise<string> {
     return this.usuariosService.deleteById(params.id);
   }
 }

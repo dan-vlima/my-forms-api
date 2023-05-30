@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Usuario } from '../models/usuario-model';
+import { CreateUsuarioSchema } from '../schemas/create-usuario-schema';
+import { EditUsuarioSchema } from '../schemas/edit-usuario-schema';
+import { PublicUsuarioType } from '../types/public-usuario-type';
 
 @Injectable()
 export class UsuariosService {
@@ -11,53 +14,71 @@ export class UsuariosService {
     private dataSource: DataSource,
   ) {}
 
-  async findAll(): Promise<Usuario[]> {
-    return Promise.resolve([
+  async findAll(): Promise<PublicUsuarioType[]> {
+    const foundUsers = await this.usuariosRepository.find();
+    const publicUsers = foundUsers.map(({ cod, nome, cpf }) => {
+      return { cod, nome, cpf };
+    });
+    return publicUsers;
+  }
+
+  async create(
+    usuario: CreateUsuarioSchema,
+  ): Promise<Omit<PublicUsuarioType, 'cod'>> {
+    const createdUser = await this.usuariosRepository.create(usuario);
+    await this.usuariosRepository.save(createdUser);
+    const { nome, cpf } = createdUser;
+    return { nome, cpf };
+  }
+
+  async findById(id: string): Promise<PublicUsuarioType> {
+    const searchedUser = await this.usuariosRepository.findOneBy({ cod: id });
+    if (!searchedUser) {
+      throw new HttpException(
+        'O usuário não foi encontrado',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const { cod, nome, cpf } = searchedUser;
+    return { cod, nome, cpf };
+  }
+
+  async putById(
+    id: string,
+    usuario: EditUsuarioSchema,
+  ): Promise<PublicUsuarioType> {
+    await this.findById(id);
+    const editedUser = await this.usuariosRepository.merge(
       {
-        cod: '3ab1186b-0062-4b2a-890d-99d31ae9d24f',
-        nome: 'Dan',
-        senha: '123456',
-        cpf: '123.456.789-10',
+        ...usuario,
       },
-    ]);
+      { cod: id },
+    );
+    await this.usuariosRepository.save(editedUser);
+    const { cod, nome, cpf } = editedUser;
+
+    return { cod, nome, cpf };
   }
 
-  async create(): Promise<Usuario> {
-    return Promise.resolve({
-      cod: '3ab1186b-0062-4b2a-890d-99d31ae9d24f',
-      nome: 'Dan',
-      senha: '123456',
-      cpf: '123.456.789-10',
-    });
+  async patchById(
+    id: string,
+    usuario: Partial<CreateUsuarioSchema>,
+  ): Promise<PublicUsuarioType> {
+    await this.findById(id);
+    const editedUser = await this.usuariosRepository.merge(
+      {
+        ...usuario,
+      } as Usuario,
+      { cod: id },
+    );
+    await this.usuariosRepository.save(editedUser);
+    const { cod, nome, cpf } = editedUser;
+    return { cod, nome, cpf };
   }
 
-  async findById(id: string): Promise<Partial<Usuario>> {
-    return Promise.resolve({
-      cod: id,
-      nome: 'Dan',
-      cpf: '123.456.789-10',
-    });
-  }
-
-  async putById(id: string): Promise<Usuario> {
-    return Promise.resolve({
-      cod: id,
-      nome: 'Dan',
-      senha: '123456',
-      cpf: '123.456.789-10',
-    });
-  }
-
-  async patchById(id: string): Promise<Usuario> {
-    return Promise.resolve({
-      cod: id,
-      nome: 'Dan',
-      senha: '123456',
-      cpf: '123.456.789-10',
-    });
-  }
-
-  async deleteById(id: string) {
-    null;
+  async deleteById(id: string): Promise<string> {
+    await this.findById(id);
+    await this.usuariosRepository.delete(id);
+    return `O usuário de id ${id} foi excluído com sucesso.`;
   }
 }
