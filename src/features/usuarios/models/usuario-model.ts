@@ -1,7 +1,7 @@
 import { BaseModel } from 'src/features/core/models/base-model';
 import { Column, Entity } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'usuarios' })
 export class Usuario extends BaseModel {
   @Column()
   nome: string;
@@ -9,6 +9,6 @@ export class Usuario extends BaseModel {
   @Column()
   senha: string;
 
-  @Column()
+  @Column({ unique: true })
   cpf: string;
 }
