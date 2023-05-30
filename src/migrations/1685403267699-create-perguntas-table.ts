@@ -1,12 +1,12 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class CreateUsuariosTable1685339083921 implements MigrationInterface {
-  name = 'CreateUsuariosTable1685339083921';
+export class CreatePerguntasTable1685403267699 implements MigrationInterface {
+  name = 'CreatePerguntasTable1685403267699';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'usuarios',
+        name: 'perguntas',
         columns: [
           {
             name: 'cod',
@@ -16,18 +16,22 @@ export class CreateUsuariosTable1685339083921 implements MigrationInterface {
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'nome',
+            name: 'cod_questionario',
             type: 'varchar',
           },
           {
-            name: 'senha',
+            name: 'descricao',
             type: 'varchar',
-            length: '20',
           },
+        ],
+        foreignKeys: [
           {
-            name: 'cpf',
-            type: 'char',
-            length: '11',
+            columnNames: ['cod_questionario'],
+            referencedTableName: 'questionarios',
+            referencedColumnNames: ['cod'],
+            onDelete: 'cascade',
+            onUpdate: 'cascade',
+            name: 'FK_perguntas_questionarios',
           },
         ],
       }),
@@ -35,6 +39,6 @@ export class CreateUsuariosTable1685339083921 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('usuarios');
+    await queryRunner.dropTable('perguntas');
   }
 }
