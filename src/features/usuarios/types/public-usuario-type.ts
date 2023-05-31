@@ -1,3 +1,3 @@
-import { Usuario } from '../models/usuario-model';
+import { UsuarioType } from './usuario-type';
 
-export type PublicUsuarioType = Omit<Usuario, 'senha'>;
+export type PublicUsuarioType = Omit<UsuarioType, 'senha'>;

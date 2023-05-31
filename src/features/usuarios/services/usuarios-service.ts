@@ -14,21 +14,23 @@ export class UsuariosService {
     private dataSource: DataSource,
   ) {}
 
-  async findAll(): Promise<PublicUsuarioType[]> {
-    const foundUsers = await this.usuariosRepository.find();
+  async findAll(page = 1, limit = 10): Promise<PublicUsuarioType[]> {
+    const foundUsers = await this.usuariosRepository.find({
+      take: limit,
+      skip: (page - 1) * limit,
+    });
     const publicUsers = foundUsers.map(({ cod, nome, cpf }) => {
       return { cod, nome, cpf };
     });
     return publicUsers;
   }
 
-  async create(
-    usuario: CreateUsuarioSchema,
-  ): Promise<Omit<PublicUsuarioType, 'cod'>> {
+  async create(usuario: CreateUsuarioSchema): Promise<PublicUsuarioType> {
+    await this.validateCPF(usuario.cpf);
     const createdUser = await this.usuariosRepository.create(usuario);
     await this.usuariosRepository.save(createdUser);
-    const { nome, cpf } = createdUser;
-    return { nome, cpf };
+    const { cod, nome, cpf } = createdUser;
+    return { cod, nome, cpf };
   }
 
   async findById(id: string): Promise<PublicUsuarioType> {
@@ -79,5 +81,27 @@ export class UsuariosService {
     await this.findById(id);
     await this.usuariosRepository.delete(id);
     return `O usuário de id ${id} foi excluído com sucesso.`;
+  }
+
+  async validateCPF(cpf: string): Promise<boolean> {
+    const regex = /^\d{11}$/;
+    const isCPFCorrectlyFormatted = regex.test(cpf);
+    if (!isCPFCorrectlyFormatted) {
+      throw new HttpException(
+        'O CPF deve ter exatamente 11 dígitos com caracteres de 1 a 9.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const isCPFNotUnique = await this.usuariosRepository.findOneBy({
+      cpf: cpf,
+    });
+    if (isCPFNotUnique) {
+      throw new HttpException(
+        'Já existe um usuário cadastrado com o mesmo CPF.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return false;
   }
 }

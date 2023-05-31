@@ -1,6 +1,5 @@
 import { BaseModel } from 'src/features/core/models/base-model';
-import { Questionario } from 'src/features/questionarios/models/questionario-model';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 
 @Entity({ name: 'usuarios' })
 export class Usuario extends BaseModel {
@@ -10,9 +9,13 @@ export class Usuario extends BaseModel {
   @Column()
   senha: string;
 
-  @Column({ unique: true })
+  @Column()
   cpf: string;
 
-  @OneToMany(() => Questionario, (questionario) => questionario.cod_usuario)
-  questionarios?: Questionario[];
+  // @OneToMany(() => Questionario, (questionario) => questionario.codUsuario)
+  // @JoinColumn({ name: 'cod_usuario' })
+  // questionarios?: Questionario[];
+
+  // @OneToMany(() => Resposta, (resposta) => resposta.codUsuario)
+  // respostas?: Resposta[];
 }

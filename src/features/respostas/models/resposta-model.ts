@@ -12,10 +12,19 @@ export class Resposta extends BaseModel {
   data: Date;
 
   @ManyToOne(() => Pergunta)
-  @JoinColumn()
+  @JoinColumn({ name: 'cod_pergunta' })
   cod_pergunta: string;
 
-  @ManyToOne(() => Usuario)
-  @JoinColumn()
+  @Column()
   cod_usuario: string;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'cod_usuario' })
+  usuario: Usuario;
+
+  // @ManyToOne(() => Pergunta, (pergunta) => pergunta.respostas)
+  // pergunta: Pergunta;
+
+  // @ManyToOne(() => Usuario, (usuario) => usuario.respostas)
+  // usuario: Usuario;
 }

@@ -1,7 +1,7 @@
-import { Entity, PrimaryColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class BaseModel {
-  @PrimaryColumn({ type: 'uuid', unique: true })
+  @PrimaryGeneratedColumn('uuid')
   cod: string;
 }

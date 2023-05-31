@@ -1,9 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PerguntasService } from 'src/features/perguntas/services/perguntas-service';
 import { UsuariosService } from 'src/features/usuarios/services/usuarios-service';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Questionario } from '../models/questionario-model';
 import { CreateQuestionarioSchema } from '../schemas/create-questionario-schema';
+import { EditQuestionarioSchema } from '../schemas/edit-questionario-schema';
+import { QuestionarioType } from '../types/questionario-type';
+import { QuestionarioWithPerguntas } from '../types/questionario-with-perguntas';
 
 @Injectable()
 export class QuestionariosService {
@@ -11,16 +15,25 @@ export class QuestionariosService {
     @InjectRepository(Questionario)
     private questionariosRepository: Repository<Questionario>,
     private readonly usuariosService: UsuariosService,
+    private readonly perguntasService: PerguntasService,
+    private readonly dataSource: DataSource,
   ) {}
 
-  async findAll(): Promise<Questionario[]> {
-    return await this.questionariosRepository.find();
+  async findAll(page = 1, limit = 10): Promise<Questionario[]> {
+    const questionarios = await this.questionariosRepository.find({
+      relations: ['perguntas'],
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+    return questionarios;
   }
 
-  async create(questionario: CreateQuestionarioSchema): Promise<Questionario> {
+  async create(
+    questionario: CreateQuestionarioSchema,
+  ): Promise<QuestionarioWithPerguntas> {
     await this.usuariosService.findById(questionario.cod_usuario);
     const date = new Date();
-    const createdForm = await this.questionariosRepository.create({
+    const createdForm = this.questionariosRepository.create({
       data: date,
       ...questionario,
     });
@@ -30,7 +43,17 @@ export class QuestionariosService {
     // so I need to fix this in the response body,
     // but not when saving in the table
     date.setUTCHours(date.getUTCHours() - 3);
-    return { ...createdForm, data: date };
+    const { perguntas } = questionario;
+    const createdPerguntas = await Promise.all(
+      perguntas.map(
+        async (pergunta) =>
+          await this.perguntasService.create({
+            cod_questionario: createdForm.cod,
+            ...pergunta,
+          }),
+      ),
+    );
+    return { ...createdForm, data: date, perguntas: createdPerguntas };
   }
 
   async findById(id: string): Promise<Questionario> {
@@ -48,33 +71,21 @@ export class QuestionariosService {
 
   async putById(
     id: string,
-    questionario: CreateQuestionarioSchema,
+    questionario: QuestionarioType,
   ): Promise<Questionario> {
     await this.findById(id);
     await this.usuariosService.findById(questionario.cod_usuario);
-    const editedForm = await this.questionariosRepository.merge(
-      {
-        ...questionario,
-      } as Questionario,
-      { cod: id },
-    );
-    await this.questionariosRepository.save(editedForm);
+    const editedForm = await this.questionariosRepository.save(questionario);
     return editedForm;
   }
 
   async patchById(
     id: string,
-    questionario: CreateQuestionarioSchema,
+    questionario: EditQuestionarioSchema,
   ): Promise<Questionario> {
     await this.findById(id);
     await this.usuariosService.findById(questionario.cod_usuario);
-    const editedForm = await this.questionariosRepository.merge(
-      {
-        ...questionario,
-      } as Questionario,
-      { cod: id },
-    );
-    await this.questionariosRepository.save(editedForm);
+    const editedForm = await this.questionariosRepository.save(questionario);
     return editedForm;
   }
 

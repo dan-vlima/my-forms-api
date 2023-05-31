@@ -8,11 +8,13 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -72,7 +74,7 @@ export class UsuariosController {
   })
   async create(
     @Body() usuario: CreateUsuarioSchema,
-  ): Promise<Omit<PublicUsuarioType, 'cod'>> {
+  ): Promise<PublicUsuarioType> {
     return this.usuariosService.create(usuario);
   }
 
@@ -90,8 +92,23 @@ export class UsuariosController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async findAll(): Promise<PublicUsuarioType[]> {
-    return this.usuariosService.findAll();
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: 'number',
+    description: 'Número da página',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: 'number',
+    description: 'Número de usuários por página',
+  })
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<PublicUsuarioType[]> {
+    return this.usuariosService.findAll(page, limit);
   }
 
   @Get(':id')

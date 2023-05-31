@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -6,8 +7,17 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { PaginationType } from 'src/features/core/types/pagination-type';
 import { QUESTIONARIOS_ROUTE_PATH } from 'src/features/questionarios/constants/questionarios-router-path';
 import { Resposta } from '../models/resposta-model';
 import { RespostasService } from '../services/respostas-service';
@@ -21,12 +31,13 @@ export class RespostasController {
   @Post('/:formId/respostas')
   @ApiParam({
     name: 'formId',
-    description:
-      'Código do questionário ao qual a resposta criada ficará vinculada.',
+    description: 'Código do questionário ao qual a resposta pertence.',
     type: 'string',
     required: true,
   })
-  @ApiOperation({ summary: 'Cria uma nova resposta a um questionário.' })
+  @ApiOperation({
+    summary: 'Cria uma nova resposta a uma pergunta de um questionário',
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Resposta criado com sucesso',
@@ -39,17 +50,45 @@ export class RespostasController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
+  @ApiBody({
+    description: 'Questionário',
+    required: true,
+    isArray: false,
+    schema: {
+      type: 'object',
+      properties: {
+        cod_pergunta: {
+          type: 'string',
+          example: 'ed5e4cd3-d4fd-4990-a8d2-e8d558d89342',
+          description:
+            'O identificador único do usuário ao qual a resposta ficará vinculada.',
+        },
+        cod_usuario: {
+          type: 'string',
+          example: '82670030-4c2a-406b-95c2-4bcf172b6ecb',
+          description:
+            'O identificador único da pergunta a qual a resposta ficará vinculada.',
+        },
+        descricao: {
+          type: 'string',
+          example: 'Meu animal favorito é o gato.',
+          description: 'Resposta a uma pergunta.',
+        },
+      },
+    },
+  })
   async create(
     @Param() params: Omit<RespostasControllerParams, 'answerId'>,
+    @Body() resposta: Resposta,
   ): Promise<Resposta> {
-    return await this.respostasService.create(params.formId);
+    return await this.respostasService.create(params.formId, resposta);
   }
 
   @Get('/:formId/respostas')
   @ApiParam({
     name: 'formId',
     description:
-      'Código do questionário ao qual as respostas buscadas estão vinculadas.',
+      'Código do questionário ao qual as respostas buscadas pertencem.',
     type: 'string',
     required: true,
   })
@@ -66,20 +105,35 @@ export class RespostasController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async findAll(@Param() params: Omit<RespostasControllerParams, 'answerId'>) {
-    return this.respostasService.findAll(params.formId);
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: 'number',
+    description: 'Número da página',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: 'number',
+    description: 'Número de respostas por página',
+  })
+  async findAll(
+    @Param() params: Omit<RespostasControllerParams, 'answerId'>,
+    @Query()
+    pagination: PaginationType = { page: 1, limit: 10 },
+  ) {
+    return this.respostasService.findAll(params.formId, pagination);
   }
 
   @Put('/:formId/respostas/:answerId')
   @ApiParam({
-    name: 'id',
-    description:
-      'Código do questionário ao qual a resposta editada está vinculada.',
+    name: 'formId',
+    description: 'Código do questionário ao qual a resposta editada pertence.',
     type: 'string',
     required: true,
   })
   @ApiParam({
-    name: 'id',
+    name: 'answerId',
     description: 'Código da resposta editada.',
     type: 'string',
     required: true,
@@ -105,20 +159,53 @@ export class RespostasController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async putById(@Param() params: RespostasControllerParams): Promise<Resposta> {
-    return this.respostasService.putById(params.formId, params.answerId);
+  @ApiBody({
+    description: 'Questionário',
+    required: true,
+    isArray: false,
+    schema: {
+      type: 'object',
+      properties: {
+        cod_usuario: {
+          type: 'string',
+          example: '82670030-4c2a-406b-95c2-4bcf172b6ecb',
+          description:
+            'O identificador único do usuário ao qual a pergunta está vinculada.',
+        },
+        cod_pergunta: {
+          type: 'string',
+          example: '82670030-4c2a-406b-95c2-4bcf172b6ecb',
+          description:
+            'O identificador único da pergunta a qual a resposta ficará vinculada.',
+        },
+        data: {
+          type: 'string',
+          example: '2023-05-31 11:26:09.879-03',
+          description: 'A data na qual a resposta foi criada.',
+        },
+      },
+    },
+  })
+  async putById(
+    @Param() params: RespostasControllerParams,
+    @Body() resposta: Resposta,
+  ): Promise<Resposta> {
+    return this.respostasService.putById(
+      params.formId,
+      params.answerId,
+      resposta,
+    );
   }
 
   @Delete('/:formId/respostas/:answerId')
   @ApiParam({
     name: 'formId',
-    description:
-      'Código do questionário ao qual a resposta excluída está vinculada.',
+    description: 'Código do questionário ao qual a resposta excluída pertence.',
     type: 'string',
     required: true,
   })
   @ApiParam({
-    name: 'id',
+    name: 'answerId',
     description: 'Código da resposta excluída.',
     type: 'string',
     required: true,
@@ -138,7 +225,9 @@ export class RespostasController {
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Erro interno do servidor.',
   })
-  async deleteById(@Param() params: RespostasControllerParams): Promise<void> {
+  async deleteById(
+    @Param() params: RespostasControllerParams,
+  ): Promise<string> {
     return this.respostasService.deleteById(params.answerId);
   }
 }

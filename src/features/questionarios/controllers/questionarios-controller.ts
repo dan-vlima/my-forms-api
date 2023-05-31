@@ -3,23 +3,24 @@ import {
   Controller,
   Delete,
   Get,
-  HttpStatus,
   Param,
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
-  ApiResponse,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { QUESTIONARIOS_ROUTE_PATH } from '../constants/questionarios-router-path';
 import { Questionario } from '../models/questionario-model';
 import { CreateQuestionarioSchema } from '../schemas/create-questionario-schema';
 import { QuestionariosService } from '../services/questionarios-service';
+import { QuestionarioType } from '../types/questionario-type';
 
 @ApiTags('Questionários')
 @Controller(QUESTIONARIOS_ROUTE_PATH)
@@ -28,40 +29,47 @@ export class QuestionariosController {
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo questionário.' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Questionário criado com sucesso',
-  })
-  @ApiResponse({
-    status: HttpStatus.FORBIDDEN,
-    description: 'Operação não permitida.',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor.',
-  })
   @ApiBody({
     description: 'Questionário',
     required: true,
-    isArray: true,
+    isArray: false,
     schema: {
       type: 'object',
       properties: {
         nome: {
           type: 'string',
           example: 'Enquete 1',
-          description: 'O nome da enquete',
+          description: 'O nome do questionário',
         },
         descricao: {
           type: 'string',
-          example: 'Esta é uma descrição da enquete.',
-          description: 'A descrição da enquete.',
+          example: 'Esta é uma descrição do questionário.',
+          description: 'A descrição do questionário.',
         },
-        cod_usuario: {
+        usuario: {
           type: 'string',
           example: '04372415-41c8-4ff9-893e-313b5385d59c',
           description:
             'O identificador único do usuário que criou o questionário',
+        },
+        perguntas: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              index_no_questionario: {
+                type: 'number',
+                example: 1,
+                description:
+                  'A posição da pergunta no questionário. Por exemplo, se ela foi a primeira pergunta, o indexNoQuestionario é 0.',
+              },
+              descricao: {
+                type: 'string',
+                example: 'Qual o endereço do seu domicílio?',
+                description: 'A descrição da pergunta.',
+              },
+            },
+          },
         },
       },
     },
@@ -74,20 +82,23 @@ export class QuestionariosController {
 
   @Get()
   @ApiOperation({ summary: 'Encontra todos os questionários.' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Questionários encontrados com sucesso.',
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: 'number',
+    description: 'Número da página',
   })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Questionários não encontrados.',
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: 'number',
+    description: 'Número de questionários por página',
   })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor.',
-  })
-  async findAll(): Promise<Questionario[]> {
-    return this.questionariosService.findAll();
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<Questionario[]> {
+    return this.questionariosService.findAll(page, limit);
   }
 
   @Get(':id')
@@ -99,18 +110,6 @@ export class QuestionariosController {
   })
   @ApiOperation({
     summary: 'Encontra um questionário pelo seu identificador único.',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Questionário encontrado com sucesso.',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'O questionário não foi encontrado',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor.',
   })
   async findById(@Param() params): Promise<Questionario> {
     return this.questionariosService.findById(params.id);
@@ -127,39 +126,32 @@ export class QuestionariosController {
     summary:
       'Modifica totalmente um questionário pelo seu identificador único.',
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Questionário editado com sucesso.',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'O questionário não foi encontrado',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNPROCESSABLE_ENTITY,
-    description:
-      'A entidade recebida não corresponde ao esperado pelo servidor.',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor.',
-  })
   @ApiBody({
     description: 'Questionário',
     required: true,
-    isArray: true,
+    isArray: false,
     schema: {
       type: 'object',
       properties: {
+        cod: {
+          type: 'string',
+          example: '69b36d27-2846-4e82-87aa-2bb4ded98ba6',
+          description: 'O identificador único do questionário',
+        },
+        date: {
+          type: 'string',
+          example: '2023-05-30T18:38:03.363Z',
+          description: 'O nome do questionário',
+        },
         nome: {
           type: 'string',
           example: 'Enquete 1',
-          description: 'O nome da enquete',
+          description: 'O nome do questionário',
         },
         descricao: {
           type: 'string',
-          example: 'Esta é uma descrição da enquete.',
-          description: 'A descrição da enquete.',
+          example: 'Esta é uma descrição do questionário.',
+          description: 'A descrição do questionário.',
         },
         cod_usuario: {
           type: 'string',
@@ -172,7 +164,7 @@ export class QuestionariosController {
   })
   async putById(
     @Param() params,
-    @Body() questionario: CreateQuestionarioSchema,
+    @Body() questionario: QuestionarioType,
   ): Promise<Questionario> {
     return this.questionariosService.putById(params.id, questionario);
   }
@@ -188,39 +180,32 @@ export class QuestionariosController {
     summary:
       'Modifica parcialmente um questionário pelo seu identificador único.',
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Questionário modificado com sucesso.',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'O questionário não foi encontrado',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNPROCESSABLE_ENTITY,
-    description:
-      'A entidade recebida não corresponde ao esperado pelo servidor.',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor.',
-  })
   @ApiBody({
     description: 'Questionário',
     required: true,
-    isArray: true,
+    isArray: false,
     schema: {
       type: 'object',
       properties: {
+        cod: {
+          type: 'string',
+          example: '69b36d27-2846-4e82-87aa-2bb4ded98ba6',
+          description: 'O identificador único do questionário',
+        },
+        date: {
+          type: 'string',
+          example: '2023-05-30T18:38:03.363Z',
+          description: 'O nome do questionário',
+        },
         nome: {
           type: 'string',
           example: 'Enquete 1',
-          description: 'O nome da enquete',
+          description: 'O nome do questionário',
         },
         descricao: {
           type: 'string',
-          example: 'Esta é uma descrição da enquete.',
-          description: 'A descrição da enquete.',
+          example: 'Esta é uma descrição do questionário.',
+          description: 'A descrição do questionário.',
         },
         cod_usuario: {
           type: 'string',
@@ -233,7 +218,7 @@ export class QuestionariosController {
   })
   async patchById(
     @Param() params,
-    @Body() questionario: CreateQuestionarioSchema,
+    @Body() questionario: QuestionarioType,
   ): Promise<Questionario> {
     return this.questionariosService.patchById(params.id, questionario);
   }
@@ -247,18 +232,6 @@ export class QuestionariosController {
   })
   @ApiOperation({
     summary: 'Exclui um questionário pelo seu identificador único.',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Questionário excluído com sucesso.',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'O questionário não foi encontrado',
-  })
-  @ApiResponse({
-    status: HttpStatus.INTERNAL_SERVER_ERROR,
-    description: 'Erro interno do servidor.',
   })
   async deleteById(@Param() params): Promise<string> {
     return this.questionariosService.deleteById(params.id);

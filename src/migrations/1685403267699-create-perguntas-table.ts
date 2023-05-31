@@ -23,6 +23,10 @@ export class CreatePerguntasTable1685403267699 implements MigrationInterface {
             name: 'descricao',
             type: 'varchar',
           },
+          {
+            name: 'index_no_questionario',
+            type: 'smallint',
+          },
         ],
         foreignKeys: [
           {

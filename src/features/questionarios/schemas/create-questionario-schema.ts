@@ -1,5 +1,5 @@
-import { IsNotEmpty } from 'class-validator';
-
+import { IsArray, IsNotEmpty } from 'class-validator';
+import { PerguntaType } from 'src/features/perguntas/types/pergunta-type';
 export class CreateQuestionarioSchema {
   @IsNotEmpty()
   nome: string;
@@ -9,4 +9,7 @@ export class CreateQuestionarioSchema {
 
   @IsNotEmpty()
   cod_usuario: string;
+
+  @IsArray()
+  perguntas?: Omit<PerguntaType, 'cod'>[];
 }

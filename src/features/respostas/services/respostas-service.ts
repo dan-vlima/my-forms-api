@@ -1,5 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationType } from 'src/features/core/types/pagination-type';
+import { Pergunta } from 'src/features/perguntas/models/pergunta-model';
+import { PerguntasService } from 'src/features/perguntas/services/perguntas-service';
+import { Questionario } from 'src/features/questionarios/models/questionario-model';
 import { DataSource, Repository } from 'typeorm';
 import { Resposta } from '../models/resposta-model';
 
@@ -8,42 +12,92 @@ export class RespostasService {
   constructor(
     @InjectRepository(Resposta)
     private respostasRepository: Repository<Resposta>,
+    @InjectRepository(Pergunta)
+    private perguntasRepository: Repository<Pergunta>,
+    // private questionariosService: QuestionariosService,
+    private readonly perguntasService: PerguntasService,
     private dataSource: DataSource,
   ) {}
 
-  async findAll(formId: string): Promise<Resposta[]> {
-    return Promise.resolve([
-      {
-        cod: 'e4b4f769-f5da-490a-881e-20cd154b4a57',
-        data: new Date(),
-        descricao: 'Uma descrição',
-        cod_pergunta: formId,
-        cod_usuario: '3ab1186b-0062-4b2a-890d-99d31ae9d24f',
+  async findAll(formId: string, pagination: PaginationType): Promise<any> {
+    const questionarioRepository = await this.dataSource.getRepository(
+      Questionario,
+    );
+
+    const questionario = await questionarioRepository.findOne({
+      where: {
+        cod: formId,
       },
-    ]);
-  }
-
-  async create(formId: string): Promise<Resposta> {
-    return await Promise.resolve({
-      cod: 'e4b4f769-f5da-490a-881e-20cd154b4a57',
-      data: new Date(),
-      descricao: 'Uma descrição',
-      cod_pergunta: formId,
-      cod_usuario: '3ab1186b-0062-4b2a-890d-99d31ae9d24f',
+      relations: ['perguntas', 'perguntas.respostas'],
     });
+
+    const perguntasERespostas = questionario.perguntas.map((pergunta) => ({
+      pergunta,
+      resposta: pergunta.respostas.find(
+        (resposta) => resposta.cod_usuario === questionario.cod_usuario,
+      ),
+    }));
+
+    const startIndex = (pagination.page - 1) * pagination.limit;
+    const endIndex = startIndex + pagination.limit;
+    const paginatedPerguntasERespostas = perguntasERespostas.slice(
+      startIndex,
+      endIndex,
+    );
+
+    const totalItems = perguntasERespostas.length;
+    const totalPages = Math.ceil(totalItems / pagination.limit);
+
+    return {
+      data: paginatedPerguntasERespostas,
+      page: pagination.page,
+      limit: pagination.limit,
+      totalItems,
+      totalPages,
+    };
   }
 
-  async putById(formId: string, answerId: string): Promise<Resposta> {
-    return Promise.resolve({
-      cod: answerId,
-      data: new Date(),
-      descricao: 'Uma descrição',
-      cod_pergunta: formId,
-      cod_usuario: '3ab1186b-0062-4b2a-890d-99d31ae9d24f',
+  async findById(id: string): Promise<Resposta> {
+    const searchedResposta = await this.respostasRepository.findOneBy({
+      cod: id,
     });
+    if (!searchedResposta) {
+      throw new HttpException(
+        'A resposta não foi encontrada.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return searchedResposta;
   }
 
-  async deleteById(answerId: string) {
-    null;
+  async create(formId: string, resposta: Resposta): Promise<Resposta> {
+    const date = new Date();
+    const createdResposta = await this.respostasRepository.create({
+      data: date,
+      ...resposta,
+    });
+    await this.respostasRepository.save(createdResposta);
+    // PostgreSQL saves with correct timezone,
+    // but JavaScript shows +3 in output,
+    // so I need to fix this in the response body,
+    // but not when saving in the table
+    date.setUTCHours(date.getUTCHours() - 3);
+    return { ...createdResposta, data: date };
+  }
+
+  async putById(
+    formId: string,
+    answerId: string,
+    resposta: Resposta,
+  ): Promise<Resposta> {
+    await this.findById(answerId);
+    const newResposta = this.respostasRepository.merge(resposta);
+    return this.respostasRepository.save(newResposta);
+  }
+
+  async deleteById(answerId: string): Promise<string> {
+    await this.findById(answerId);
+    await this.respostasRepository.delete({ cod: answerId });
+    return `A resposta de id ${answerId} excluída com sucesso.`;
   }
 }

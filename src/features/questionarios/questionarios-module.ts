@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Pergunta } from '../perguntas/models/pergunta-model';
+import { PerguntasService } from '../perguntas/services/perguntas-service';
 import { Usuario } from '../usuarios/models/usuario-model';
 import { UsuariosService } from '../usuarios/services/usuarios-service';
 import { QuestionariosController } from './controllers/questionarios-controller';
@@ -10,8 +12,9 @@ import { QuestionariosService } from './services/questionarios-service';
   imports: [
     TypeOrmModule.forFeature([Questionario]),
     TypeOrmModule.forFeature([Usuario]),
+    TypeOrmModule.forFeature([Pergunta]),
   ],
-  providers: [QuestionariosService, UsuariosService],
+  providers: [QuestionariosService, UsuariosService, PerguntasService],
   controllers: [QuestionariosController],
 })
 export class QuestionariosModule {}
