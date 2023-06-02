@@ -3,8 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationType } from 'src/features/core/types/pagination-type';
 import { Pergunta } from 'src/features/perguntas/models/pergunta-model';
 import { PerguntasService } from 'src/features/perguntas/services/perguntas-service';
+import { Questionario } from 'src/features/questionarios/models/questionario-model';
 import { DataSource, Repository } from 'typeorm';
 import { Resposta } from '../models/resposta-model';
+import { PerguntasWithRespostasType } from '../types/perguntas-with-respostas-type';
 
 @Injectable()
 export class RespostasService {
@@ -18,37 +20,43 @@ export class RespostasService {
     private dataSource: DataSource,
   ) {}
 
-  async findAll(formId: string, pagination: PaginationType): Promise<any> {
-    // const questionarioRepository = await this.dataSource.getRepository(
-    //   Questionario,
-    // );
-    // const questionario = await questionarioRepository.findOne({
-    //   where: {
-    //     cod: formId,
-    //   },
-    //   relations: ['perguntas', 'perguntas.respostas'],
-    // });
-    // const perguntasERespostas = questionario.perguntas.map((pergunta) => ({
-    //   pergunta,
-    //   resposta: pergunta.respostas.find(
-    //     (resposta) => resposta.cod_usuario === questionario.cod_usuario,
-    //   ),
-    // }));
-    // const startIndex = (pagination.page - 1) * pagination.limit;
-    // const endIndex = startIndex + pagination.limit;
-    // const paginatedPerguntasERespostas = perguntasERespostas.slice(
-    //   startIndex,
-    //   endIndex,
-    // );
-    // const totalItems = perguntasERespostas.length;
-    // const totalPages = Math.ceil(totalItems / pagination.limit);
-    // return {
-    //   data: paginatedPerguntasERespostas,
-    //   page: pagination.page,
-    //   limit: pagination.limit,
-    //   totalItems,
-    //   totalPages,
-    // };
+  async findAll(
+    formId: string,
+    pagination: PaginationType,
+  ): Promise<PerguntasWithRespostasType> {
+    const questionarioRepository = this.dataSource.getRepository(Questionario);
+
+    const questionario = await questionarioRepository.findOne({
+      where: {
+        cod: formId,
+      },
+      relations: ['perguntas', 'perguntas.respostas'],
+    });
+
+    if (!questionario) {
+      throw new HttpException(
+        'Questionário não encontrado.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const respostasPorPergunta = questionario.perguntas.map(
+      (pergunta: Pergunta) => {
+        return {
+          pergunta: pergunta.cod,
+          descricaoDaPergunta: pergunta.descricao,
+          indexNoQuestionario: pergunta.indexNoQuestionario,
+          descricaoPergunta: pergunta.descricao,
+          respostas: pergunta.respostas.map((resposta: Resposta) => ({
+            descricao: resposta.descricao,
+            data: resposta.data,
+            usuario: resposta.usuario,
+          })),
+        };
+      },
+    );
+
+    return respostasPorPergunta;
   }
 
   async findById(id: string): Promise<Resposta> {
@@ -81,13 +89,12 @@ export class RespostasService {
     return { ...createdResposta, data: date };
   }
 
-  async putById(
-    formId: string,
-    answerId: string,
-    resposta: Resposta,
-  ): Promise<Resposta> {
-    await this.findById(answerId);
-    const newResposta = this.respostasRepository.merge(resposta);
+  async putById(answerId: string, resposta: Resposta): Promise<Resposta> {
+    const existingResposta = await this.findById(answerId);
+    const newResposta = this.respostasRepository.merge(
+      existingResposta,
+      resposta,
+    );
     return this.respostasRepository.save(newResposta);
   }
 

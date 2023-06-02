@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Pergunta } from 'src/features/perguntas/models/pergunta-model';
 import { PerguntasService } from 'src/features/perguntas/services/perguntas-service';
 import { UsuariosService } from 'src/features/usuarios/services/usuarios-service';
 import { DataSource, Repository } from 'typeorm';
@@ -13,6 +14,8 @@ export class QuestionariosService {
     private questionariosRepository: Repository<Questionario>,
     private readonly usuariosService: UsuariosService,
     private readonly perguntasService: PerguntasService,
+    @InjectRepository(Pergunta)
+    private perguntasRepository: Repository<Pergunta>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -73,12 +76,34 @@ export class QuestionariosService {
   }
 
   async putById(id: string, questionario: Questionario): Promise<Questionario> {
-    await this.findById(id);
-    const date = new Date();
-    const editedForm = await this.questionariosRepository.save({
-      data: date,
-      ...questionario,
+    const questionarioExistente = await this.findById(id);
+
+    questionarioExistente.data = new Date();
+    questionarioExistente.nome = questionario.nome;
+    questionarioExistente.descricao = questionario.descricao;
+
+    questionario.perguntas.forEach(async (pergunta) => {
+      const perguntaExistente = questionarioExistente.perguntas.find(
+        (p) => p.cod === pergunta.cod,
+      );
+      if (perguntaExistente) {
+        Object.assign(perguntaExistente, pergunta);
+        await this.perguntasRepository.save(perguntaExistente);
+      } else {
+        const novaPergunta = this.perguntasRepository.create({
+          ...pergunta,
+          questionario: questionarioExistente,
+        });
+        questionarioExistente.perguntas.push(novaPergunta);
+        await this.perguntasRepository.save(novaPergunta);
+      }
     });
+
+    const editedForm = await this.questionariosRepository.save(
+      questionarioExistente,
+    );
+
+    const date = new Date();
     date.setUTCHours(date.getUTCHours() - 3);
     return { data: date, ...editedForm };
   }
@@ -87,11 +112,34 @@ export class QuestionariosService {
     id: string,
     questionario: Questionario,
   ): Promise<Questionario> {
-    await this.findById(id);
-    // MOCKED USER ID
-    await this.usuariosService.findById('5d0b4214-6e89-4a31-be5b-0948f9b5c829');
-    const editedForm = await this.questionariosRepository.save(questionario);
-    return editedForm;
+    const questionarioExistente = await this.findById(id);
+
+    questionarioExistente.nome = questionario.nome;
+    questionarioExistente.descricao = questionario.descricao;
+
+    questionario.perguntas.forEach(async (pergunta) => {
+      const perguntaExistente = questionarioExistente.perguntas.find(
+        (p) => p.cod === pergunta.cod,
+      );
+      if (perguntaExistente) {
+        Object.assign(perguntaExistente, pergunta);
+        await this.perguntasRepository.save(perguntaExistente);
+      } else {
+        const novaPergunta = this.perguntasRepository.create({
+          ...pergunta,
+          questionario: questionarioExistente,
+        });
+        questionarioExistente.perguntas.push(novaPergunta);
+        await this.perguntasRepository.save(novaPergunta);
+      }
+    });
+
+    // Salva as alterações no questionário no banco de dados
+    const editedForm = await this.questionariosRepository.save(
+      questionarioExistente,
+    );
+
+    return { ...editedForm };
   }
 
   async deleteById(id: string): Promise<string> {

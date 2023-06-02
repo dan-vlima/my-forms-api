@@ -9,9 +9,9 @@ export class Pergunta extends BaseModel {
   descricao: string;
 
   @Column({ name: 'index_no_questionario', type: 'smallint' })
-  index_no_questionario: number;
+  indexNoQuestionario: number;
 
-  @OneToMany(() => Resposta, (resposta) => resposta.cod_pergunta)
+  @OneToMany(() => Resposta, (resposta) => resposta.pergunta)
   respostas?: Resposta[];
 
   @JoinColumn({ name: 'cod_questionario' })

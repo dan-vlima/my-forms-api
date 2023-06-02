@@ -2,7 +2,7 @@ import { IsNotEmpty } from 'class-validator';
 
 export class CreatePerguntaSchema {
   @IsNotEmpty()
-  index_no_questionario: number;
+  indexNoQuestionario: number;
 
   @IsNotEmpty()
   descricao: string;

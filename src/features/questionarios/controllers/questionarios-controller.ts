@@ -55,7 +55,7 @@ export class QuestionariosController {
           items: {
             type: 'object',
             properties: {
-              index_no_questionario: {
+              indexNoQuestionario: {
                 type: 'number',
                 example: 1,
                 description:

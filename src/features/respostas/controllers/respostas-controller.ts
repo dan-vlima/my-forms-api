@@ -57,7 +57,7 @@ export class RespostasController {
     schema: {
       type: 'object',
       properties: {
-        cod_pergunta: {
+        pergunta: {
           type: 'string',
           example: 'ed5e4cd3-d4fd-4990-a8d2-e8d558d89342',
           description:
@@ -127,12 +127,6 @@ export class RespostasController {
 
   @Put('/:formId/respostas/:answerId')
   @ApiParam({
-    name: 'formId',
-    description: 'Código do questionário ao qual a resposta editada pertence.',
-    type: 'string',
-    required: true,
-  })
-  @ApiParam({
     name: 'answerId',
     description: 'Código da resposta editada.',
     type: 'string',
@@ -172,11 +166,16 @@ export class RespostasController {
           description:
             'O identificador único do usuário ao qual a pergunta está vinculada.',
         },
-        cod_pergunta: {
+        pergunta: {
           type: 'string',
           example: '82670030-4c2a-406b-95c2-4bcf172b6ecb',
           description:
             'O identificador único da pergunta a qual a resposta ficará vinculada.',
+        },
+        descricao: {
+          type: 'string',
+          example: 'Meu animal favorito é o gato.',
+          description: 'Resposta a uma pergunta.',
         },
         data: {
           type: 'string',
@@ -190,11 +189,7 @@ export class RespostasController {
     @Param() params: RespostasControllerParams,
     @Body() resposta: Resposta,
   ): Promise<Resposta> {
-    return this.respostasService.putById(
-      params.formId,
-      params.answerId,
-      resposta,
-    );
+    return this.respostasService.putById(params.answerId, resposta);
   }
 
   @Delete('/:formId/respostas/:answerId')
