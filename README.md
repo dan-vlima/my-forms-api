@@ -1,4 +1,4 @@
-Projeto de questionários criado com NestJS, TypeORM e PostgreSQL.
+API de um aplicativo de questionários criada com NestJS, TypeORM e PostgreSQL.
 
 Mudanças em relação à proposta original:
 
