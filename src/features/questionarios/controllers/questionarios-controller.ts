@@ -18,9 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { QUESTIONARIOS_ROUTE_PATH } from '../constants/questionarios-router-path';
 import { Questionario } from '../models/questionario-model';
-import { CreateQuestionarioSchema } from '../schemas/create-questionario-schema';
 import { QuestionariosService } from '../services/questionarios-service';
-import { QuestionarioType } from '../types/questionario-type';
 
 @ApiTags('Questionários')
 @Controller(QUESTIONARIOS_ROUTE_PATH)
@@ -28,6 +26,12 @@ export class QuestionariosController {
   constructor(private readonly questionariosService: QuestionariosService) {}
 
   @Post()
+  @ApiParam({
+    name: 'id',
+    description: 'Código do usuário que está criando o questionário.',
+    type: 'string',
+    required: true,
+  })
   @ApiOperation({ summary: 'Cria um novo questionário.' })
   @ApiBody({
     description: 'Questionário',
@@ -45,12 +49,6 @@ export class QuestionariosController {
           type: 'string',
           example: 'Esta é uma descrição do questionário.',
           description: 'A descrição do questionário.',
-        },
-        usuario: {
-          type: 'string',
-          example: '04372415-41c8-4ff9-893e-313b5385d59c',
-          description:
-            'O identificador único do usuário que criou o questionário',
         },
         perguntas: {
           type: 'array',
@@ -75,9 +73,10 @@ export class QuestionariosController {
     },
   })
   async create(
-    @Body() questionario: CreateQuestionarioSchema,
+    @Param() id: string,
+    @Body() questionario: Questionario,
   ): Promise<Questionario> {
-    return this.questionariosService.create(questionario);
+    return this.questionariosService.create(id, questionario);
   }
 
   @Get()
@@ -133,12 +132,7 @@ export class QuestionariosController {
     schema: {
       type: 'object',
       properties: {
-        cod: {
-          type: 'string',
-          example: '69b36d27-2846-4e82-87aa-2bb4ded98ba6',
-          description: 'O identificador único do questionário',
-        },
-        date: {
+        data: {
           type: 'string',
           example: '2023-05-30T18:38:03.363Z',
           description: 'O nome do questionário',
@@ -153,7 +147,7 @@ export class QuestionariosController {
           example: 'Esta é uma descrição do questionário.',
           description: 'A descrição do questionário.',
         },
-        cod_usuario: {
+        usuario: {
           type: 'string',
           example: '04372415-41c8-4ff9-893e-313b5385d59c',
           description:
@@ -164,7 +158,7 @@ export class QuestionariosController {
   })
   async putById(
     @Param() params,
-    @Body() questionario: QuestionarioType,
+    @Body() questionario: Questionario,
   ): Promise<Questionario> {
     return this.questionariosService.putById(params.id, questionario);
   }
@@ -187,12 +181,7 @@ export class QuestionariosController {
     schema: {
       type: 'object',
       properties: {
-        cod: {
-          type: 'string',
-          example: '69b36d27-2846-4e82-87aa-2bb4ded98ba6',
-          description: 'O identificador único do questionário',
-        },
-        date: {
+        data: {
           type: 'string',
           example: '2023-05-30T18:38:03.363Z',
           description: 'O nome do questionário',
@@ -207,7 +196,7 @@ export class QuestionariosController {
           example: 'Esta é uma descrição do questionário.',
           description: 'A descrição do questionário.',
         },
-        cod_usuario: {
+        usuario: {
           type: 'string',
           example: '04372415-41c8-4ff9-893e-313b5385d59c',
           description:
@@ -218,7 +207,7 @@ export class QuestionariosController {
   })
   async patchById(
     @Param() params,
-    @Body() questionario: QuestionarioType,
+    @Body() questionario: Questionario,
   ): Promise<Questionario> {
     return this.questionariosService.patchById(params.id, questionario);
   }

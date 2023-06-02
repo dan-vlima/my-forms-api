@@ -63,7 +63,7 @@ export class RespostasController {
           description:
             'O identificador único do usuário ao qual a resposta ficará vinculada.',
         },
-        cod_usuario: {
+        usuario: {
           type: 'string',
           example: '82670030-4c2a-406b-95c2-4bcf172b6ecb',
           description:
@@ -166,7 +166,7 @@ export class RespostasController {
     schema: {
       type: 'object',
       properties: {
-        cod_usuario: {
+        usuario: {
           type: 'string',
           example: '82670030-4c2a-406b-95c2-4bcf172b6ecb',
           description:

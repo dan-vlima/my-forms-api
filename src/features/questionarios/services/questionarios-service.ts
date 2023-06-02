@@ -4,9 +4,6 @@ import { PerguntasService } from 'src/features/perguntas/services/perguntas-serv
 import { UsuariosService } from 'src/features/usuarios/services/usuarios-service';
 import { DataSource, Repository } from 'typeorm';
 import { Questionario } from '../models/questionario-model';
-import { CreateQuestionarioSchema } from '../schemas/create-questionario-schema';
-import { EditQuestionarioSchema } from '../schemas/edit-questionario-schema';
-import { QuestionarioType } from '../types/questionario-type';
 import { QuestionarioWithPerguntas } from '../types/questionario-with-perguntas';
 
 @Injectable()
@@ -29,13 +26,16 @@ export class QuestionariosService {
   }
 
   async create(
-    questionario: CreateQuestionarioSchema,
+    id: string,
+    questionario: Questionario,
   ): Promise<QuestionarioWithPerguntas> {
-    await this.usuariosService.findById(questionario.usuario);
+    // MOCKED USER ID
+    await this.usuariosService.findById('5d0b4214-6e89-4a31-be5b-0948f9b5c829');
     const date = new Date();
     const createdForm = this.questionariosRepository.create({
-      ...questionario,
+      usuario: '5d0b4214-6e89-4a31-be5b-0948f9b5c829',
       data: date,
+      ...questionario,
     });
     await this.questionariosRepository.save(createdForm);
     // PostgreSQL saves with correct timezone,
@@ -57,8 +57,11 @@ export class QuestionariosService {
   }
 
   async findById(id: string): Promise<Questionario> {
-    const searchedForm = await this.questionariosRepository.findOneBy({
-      cod: id,
+    const searchedForm = await this.questionariosRepository.findOne({
+      relations: ['perguntas'],
+      where: {
+        cod: id,
+      },
     });
     if (!searchedForm) {
       throw new HttpException(
@@ -69,22 +72,24 @@ export class QuestionariosService {
     return searchedForm;
   }
 
-  async putById(
-    id: string,
-    questionario: QuestionarioType,
-  ): Promise<Questionario> {
+  async putById(id: string, questionario: Questionario): Promise<Questionario> {
     await this.findById(id);
-    await this.usuariosService.findById(questionario.usuario);
-    const editedForm = await this.questionariosRepository.save(questionario);
-    return editedForm;
+    const date = new Date();
+    const editedForm = await this.questionariosRepository.save({
+      data: date,
+      ...questionario,
+    });
+    date.setUTCHours(date.getUTCHours() - 3);
+    return { data: date, ...editedForm };
   }
 
   async patchById(
     id: string,
-    questionario: EditQuestionarioSchema,
+    questionario: Questionario,
   ): Promise<Questionario> {
     await this.findById(id);
-    await this.usuariosService.findById(questionario.usuario);
+    // MOCKED USER ID
+    await this.usuariosService.findById('5d0b4214-6e89-4a31-be5b-0948f9b5c829');
     const editedForm = await this.questionariosRepository.save(questionario);
     return editedForm;
   }

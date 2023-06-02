@@ -1,4 +1,5 @@
 import { BaseModel } from 'src/features/core/models/base-model';
+import { Pergunta } from 'src/features/perguntas/models/pergunta-model';
 import { Usuario } from 'src/features/usuarios/models/usuario-model';
 import {
   Column,
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 @Entity({ name: 'questionarios' })
@@ -21,8 +23,8 @@ export class Questionario extends BaseModel {
 
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'cod_usuario' })
-  usuario: string;
+  usuario: Usuario;
 
-  // @OneToMany(() => Pergunta, (pergunta) => pergunta.questionario)
-  // perguntas: Pergunta[];
+  @OneToMany(() => Pergunta, (pergunta) => pergunta.questionario)
+  perguntas: Pergunta[];
 }
