@@ -11,11 +11,4 @@ export class Usuario extends BaseModel {
 
   @Column()
   cpf: string;
-
-  // @OneToMany(() => Questionario, (questionario) => questionario.codUsuario)
-  // @JoinColumn({ name: 'cod_usuario' })
-  // questionarios?: Questionario[];
-
-  // @OneToMany(() => Resposta, (resposta) => resposta.codUsuario)
-  // respostas?: Resposta[];
 }
