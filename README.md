@@ -1,4 +1,4 @@
-Projeto criado com NestJS, TypeORM e PostgreSQL.
+Projeto de questionários criado com NestJS, TypeORM e PostgreSQL.
 
 Mudanças em relação à proposta original:
 
@@ -8,7 +8,8 @@ Mudanças em relação à proposta original:
 Instruções:
 
 - Ao iniciar o projeto, após criar um banco de dados com as configs do arquivo datasource-config.js rodar o script "node run migration:run" para criar as tables.
-- A documentação dos endpoints se encontra em localhost:3333/docs.
+
+A documentação dos endpoints se encontra em localhost:3333/docs.
 
 Link do repositório do front end:
 https://github.com/dan-vlima/my-forms-client
