@@ -15,9 +15,6 @@ export class Resposta extends BaseModel {
   @JoinColumn({ name: 'cod_pergunta' })
   cod_pergunta: string;
 
-  @Column()
-  cod_usuario: string;
-
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'cod_usuario' })
   usuario: Usuario;

@@ -67,6 +67,8 @@ export class RespostasService {
   async create(formId: string, resposta: Resposta): Promise<Resposta> {
     const date = new Date();
     const createdResposta = await this.respostasRepository.create({
+      // MOCKED USER ID
+      usuario: '5d0b4214-6e89-4a31-be5b-0948f9b5c829',
       data: date,
       ...resposta,
     });
