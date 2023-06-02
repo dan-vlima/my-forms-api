@@ -8,16 +8,13 @@ export class Pergunta extends BaseModel {
   @Column()
   descricao: string;
 
-  @ManyToOne(() => Questionario)
-  @JoinColumn({ name: 'cod_questionario' })
-  cod_questionario: string;
-
   @Column({ name: 'index_no_questionario', type: 'smallint' })
   index_no_questionario: number;
 
   @OneToMany(() => Resposta, (resposta) => resposta.cod_pergunta)
   respostas?: Resposta[];
 
-  // @ManyToOne(() => Questionario, (questionario) => questionario.perguntas)
-  // questionario?: Questionario;
+  @JoinColumn({ name: 'cod_questionario' })
+  @ManyToOne(() => Questionario)
+  questionario: Questionario;
 }

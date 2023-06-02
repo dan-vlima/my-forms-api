@@ -1,6 +1,6 @@
 export type QuestionarioType = {
   cod: string;
-  cod_usuario: string;
+  usuario: string;
   nome: string;
   descricao: string;
   data: Date;

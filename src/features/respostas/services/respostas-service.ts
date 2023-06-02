@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationType } from 'src/features/core/types/pagination-type';
 import { Pergunta } from 'src/features/perguntas/models/pergunta-model';
 import { PerguntasService } from 'src/features/perguntas/services/perguntas-service';
-import { Questionario } from 'src/features/questionarios/models/questionario-model';
 import { DataSource, Repository } from 'typeorm';
 import { Resposta } from '../models/resposta-model';
 
@@ -20,41 +19,36 @@ export class RespostasService {
   ) {}
 
   async findAll(formId: string, pagination: PaginationType): Promise<any> {
-    const questionarioRepository = await this.dataSource.getRepository(
-      Questionario,
-    );
-
-    const questionario = await questionarioRepository.findOne({
-      where: {
-        cod: formId,
-      },
-      relations: ['perguntas', 'perguntas.respostas'],
-    });
-
-    const perguntasERespostas = questionario.perguntas.map((pergunta) => ({
-      pergunta,
-      resposta: pergunta.respostas.find(
-        (resposta) => resposta.cod_usuario === questionario.cod_usuario,
-      ),
-    }));
-
-    const startIndex = (pagination.page - 1) * pagination.limit;
-    const endIndex = startIndex + pagination.limit;
-    const paginatedPerguntasERespostas = perguntasERespostas.slice(
-      startIndex,
-      endIndex,
-    );
-
-    const totalItems = perguntasERespostas.length;
-    const totalPages = Math.ceil(totalItems / pagination.limit);
-
-    return {
-      data: paginatedPerguntasERespostas,
-      page: pagination.page,
-      limit: pagination.limit,
-      totalItems,
-      totalPages,
-    };
+    // const questionarioRepository = await this.dataSource.getRepository(
+    //   Questionario,
+    // );
+    // const questionario = await questionarioRepository.findOne({
+    //   where: {
+    //     cod: formId,
+    //   },
+    //   relations: ['perguntas', 'perguntas.respostas'],
+    // });
+    // const perguntasERespostas = questionario.perguntas.map((pergunta) => ({
+    //   pergunta,
+    //   resposta: pergunta.respostas.find(
+    //     (resposta) => resposta.cod_usuario === questionario.cod_usuario,
+    //   ),
+    // }));
+    // const startIndex = (pagination.page - 1) * pagination.limit;
+    // const endIndex = startIndex + pagination.limit;
+    // const paginatedPerguntasERespostas = perguntasERespostas.slice(
+    //   startIndex,
+    //   endIndex,
+    // );
+    // const totalItems = perguntasERespostas.length;
+    // const totalPages = Math.ceil(totalItems / pagination.limit);
+    // return {
+    //   data: paginatedPerguntasERespostas,
+    //   page: pagination.page,
+    //   limit: pagination.limit,
+    //   totalItems,
+    //   totalPages,
+    // };
   }
 
   async findById(id: string): Promise<Resposta> {

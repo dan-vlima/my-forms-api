@@ -8,7 +8,7 @@ export class CreateQuestionarioSchema {
   descricao: string;
 
   @IsNotEmpty()
-  cod_usuario: string;
+  usuario: string;
 
   @IsArray()
   perguntas?: Omit<PerguntaType, 'cod'>[];

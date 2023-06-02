@@ -31,11 +31,11 @@ export class QuestionariosService {
   async create(
     questionario: CreateQuestionarioSchema,
   ): Promise<QuestionarioWithPerguntas> {
-    await this.usuariosService.findById(questionario.cod_usuario);
+    await this.usuariosService.findById(questionario.usuario);
     const date = new Date();
     const createdForm = this.questionariosRepository.create({
-      data: date,
       ...questionario,
+      data: date,
     });
     await this.questionariosRepository.save(createdForm);
     // PostgreSQL saves with correct timezone,
@@ -48,7 +48,7 @@ export class QuestionariosService {
       perguntas.map(
         async (pergunta) =>
           await this.perguntasService.create({
-            cod_questionario: createdForm.cod,
+            questionario: createdForm.cod,
             ...pergunta,
           }),
       ),
@@ -74,7 +74,7 @@ export class QuestionariosService {
     questionario: QuestionarioType,
   ): Promise<Questionario> {
     await this.findById(id);
-    await this.usuariosService.findById(questionario.cod_usuario);
+    await this.usuariosService.findById(questionario.usuario);
     const editedForm = await this.questionariosRepository.save(questionario);
     return editedForm;
   }
@@ -84,7 +84,7 @@ export class QuestionariosService {
     questionario: EditQuestionarioSchema,
   ): Promise<Questionario> {
     await this.findById(id);
-    await this.usuariosService.findById(questionario.cod_usuario);
+    await this.usuariosService.findById(questionario.usuario);
     const editedForm = await this.questionariosRepository.save(questionario);
     return editedForm;
   }
