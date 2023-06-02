@@ -14,6 +14,7 @@ export class Pergunta extends BaseModel {
   @OneToMany(() => Resposta, (resposta) => resposta.pergunta)
   respostas?: Resposta[];
 
+  @ManyToOne(() => Questionario, (questionario) => questionario.perguntas)
   @JoinColumn({ name: 'cod_questionario' })
   @ManyToOne(() => Questionario)
   questionario: Questionario;

@@ -78,26 +78,31 @@ export class QuestionariosService {
   async putById(id: string, questionario: Questionario): Promise<Questionario> {
     const questionarioExistente = await this.findById(id);
 
-    questionarioExistente.data = new Date();
-    questionarioExistente.nome = questionario.nome;
-    questionarioExistente.descricao = questionario.descricao;
-
-    questionario.perguntas.forEach(async (pergunta) => {
-      const perguntaExistente = questionarioExistente.perguntas.find(
-        (p) => p.cod === pergunta.cod,
-      );
-      if (perguntaExistente) {
-        Object.assign(perguntaExistente, pergunta);
-        await this.perguntasRepository.save(perguntaExistente);
-      } else {
-        const novaPergunta = this.perguntasRepository.create({
-          ...pergunta,
-          questionario: questionarioExistente,
-        });
-        questionarioExistente.perguntas.push(novaPergunta);
-        await this.perguntasRepository.save(novaPergunta);
+    if (questionario.perguntas && questionario.perguntas.length > 0) {
+      for (const pergunta of questionario.perguntas) {
+        const perguntaExistente = questionarioExistente.perguntas.find(
+          (p) => p.cod === pergunta.cod,
+        );
+        if (perguntaExistente) {
+          Object.assign(perguntaExistente, pergunta);
+          await this.perguntasRepository.save(perguntaExistente);
+        } else {
+          const novaPergunta = this.perguntasRepository.create({
+            ...pergunta,
+            questionario: questionarioExistente,
+          });
+          questionarioExistente.perguntas.push(novaPergunta);
+          await this.perguntasRepository.save(novaPergunta);
+        }
       }
-    });
+    }
+
+    if (questionario.nome) {
+      questionarioExistente.nome = questionario.nome;
+    }
+    if (questionario.descricao) {
+      questionarioExistente.descricao = questionario.descricao;
+    }
 
     const editedForm = await this.questionariosRepository.save(
       questionarioExistente,
@@ -114,32 +119,37 @@ export class QuestionariosService {
   ): Promise<Questionario> {
     const questionarioExistente = await this.findById(id);
 
-    questionarioExistente.nome = questionario.nome;
-    questionarioExistente.descricao = questionario.descricao;
-
-    questionario.perguntas.forEach(async (pergunta) => {
-      const perguntaExistente = questionarioExistente.perguntas.find(
-        (p) => p.cod === pergunta.cod,
-      );
-      if (perguntaExistente) {
-        Object.assign(perguntaExistente, pergunta);
-        await this.perguntasRepository.save(perguntaExistente);
-      } else {
-        const novaPergunta = this.perguntasRepository.create({
-          ...pergunta,
-          questionario: questionarioExistente,
-        });
-        questionarioExistente.perguntas.push(novaPergunta);
-        await this.perguntasRepository.save(novaPergunta);
+    if (questionario.perguntas && questionario.perguntas.length > 0) {
+      for (const pergunta of questionario.perguntas) {
+        const perguntaExistente = questionarioExistente.perguntas.find(
+          (p) => p.cod === pergunta.cod,
+        );
+        if (perguntaExistente) {
+          Object.assign(perguntaExistente, pergunta);
+          await this.perguntasRepository.save(perguntaExistente);
+        } else {
+          const novaPergunta = this.perguntasRepository.create({
+            ...pergunta,
+            questionario: questionarioExistente,
+          });
+          questionarioExistente.perguntas.push(novaPergunta);
+          await this.perguntasRepository.save(novaPergunta);
+        }
       }
-    });
+    }
 
-    // Salva as alterações no questionário no banco de dados
+    if (questionario.nome) {
+      questionarioExistente.nome = questionario.nome;
+    }
+    if (questionario.descricao) {
+      questionarioExistente.descricao = questionario.descricao;
+    }
+
     const editedForm = await this.questionariosRepository.save(
       questionarioExistente,
     );
 
-    return { ...editedForm };
+    return editedForm;
   }
 
   async deleteById(id: string): Promise<string> {
